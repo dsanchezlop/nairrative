@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Rutas protegidas — redirigir a /login si no autenticado
-  const protectedRoutes = ['/dashboard', '/generation', '/campaigns']
+  const protectedRoutes = ['/dashboard', '/generation', '/campaigns', '/profile']
   const isProtected = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   )

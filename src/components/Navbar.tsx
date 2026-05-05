@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Scroll, LogOut, Swords } from 'lucide-react'
+import { Scroll, LogOut, Swords, UserCircle } from 'lucide-react'
 
 
 
@@ -36,6 +36,13 @@ export default function Navbar() {
           >
             <Swords className="h-4 w-4 mr-1" />
             Campañas
+          </Link>
+          <Link
+            href="/profile"
+            className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-gray-400 hover:text-white hover:bg-purple-900/30')}
+          >
+            <UserCircle className="h-4 w-4 mr-1" />
+            Perfil
           </Link>
           <Button
             variant="ghost"

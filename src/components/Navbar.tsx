@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Scroll, LogOut, BookOpen } from 'lucide-react'
+import { Scroll, LogOut, Swords } from 'lucide-react'
+
+
 
 export default function Navbar() {
   const router = useRouter()
@@ -20,7 +22,7 @@ export default function Navbar() {
   return (
     <header className="border-b border-purple-900/30 bg-[#0d0d1a]/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2 group">
+        <Link href="/campaigns" className="flex items-center gap-2 group">
           <Scroll className="h-6 w-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
           <span className="text-lg font-bold text-purple-200 group-hover:text-white transition-colors tracking-wide">
             NAIrrative
@@ -29,11 +31,11 @@ export default function Navbar() {
 
         <nav className="flex items-center gap-2">
           <Link
-            href="/dashboard"
+            href="/campaigns"
             className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-gray-400 hover:text-white hover:bg-purple-900/30')}
           >
-            <BookOpen className="h-4 w-4 mr-1" />
-            Mis historias
+            <Swords className="h-4 w-4 mr-1" />
+            Campañas
           </Link>
           <Button
             variant="ghost"

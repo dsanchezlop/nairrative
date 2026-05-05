@@ -33,7 +33,7 @@ const PLACEHOLDERS: Record<Category, string> = {
   otro: 'Ej: Una espada maldita que susurra los nombres de sus víctimas anteriores...',
 }
 
-export default function GenerationForm({ onGenerated }: { onGenerated: () => void }) {
+export default function GenerationForm({ onGenerated, defaultCampaignId }: { onGenerated: () => void; defaultCampaignId?: string | null }) {
   const router = useRouter()
   const [category, setCategory] = useState<Category>('personaje')
   const [prompt, setPrompt] = useState('')
@@ -48,7 +48,7 @@ export default function GenerationForm({ onGenerated }: { onGenerated: () => voi
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, category }),
+        body: JSON.stringify({ prompt, category, campaign_id: defaultCampaignId ?? null }),
       })
 
       const data = await res.json()

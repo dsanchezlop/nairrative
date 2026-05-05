@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Rutas protegidas — redirigir a /login si no autenticado
-  const protectedRoutes = ['/dashboard', '/generation']
+  const protectedRoutes = ['/dashboard', '/generation', '/campaigns']
   const isProtected = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   )
@@ -41,9 +41,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Si ya está autenticado y va a login/register → redirigir a dashboard
+  // Si ya está autenticado y va a login/register → redirigir a campaigns
   if (user && (pathname === '/login' || pathname === '/register')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/campaigns', request.url))
   }
 
   return supabaseResponse

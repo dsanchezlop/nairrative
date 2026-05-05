@@ -129,7 +129,7 @@ export default function GenerationEditor({ generation }: { generation: Generatio
     }
 
     toast.success('Texto eliminado.')
-    router.push('/dashboard')
+    router.push(generation.campaign_id ? `/dashboard?campaign=${generation.campaign_id}` : '/campaigns')
     router.refresh()
   }
 
@@ -138,7 +138,7 @@ export default function GenerationEditor({ generation }: { generation: Generatio
       {/* Cabecera */}
       <div className="flex items-center gap-3">
         <Link
-          href="/dashboard"
+          href={generation.campaign_id ? `/dashboard?campaign=${generation.campaign_id}` : '/campaigns'}
           className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-gray-400 hover:text-white hover:bg-purple-900/30')}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />

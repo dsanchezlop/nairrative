@@ -42,14 +42,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Parsear body
-    let body: { prompt?: string; category?: Category; parentContent?: string; returnOnly?: boolean }
+    let body: { prompt?: string; category?: Category; parentContent?: string; returnOnly?: boolean; campaign_id?: string | null }
     try {
       body = await request.json()
     } catch (parseErr) {
       console.error('JSON parse error:', parseErr)
       return NextResponse.json({ error: 'Cuerpo de petición inválido' }, { status: 400 })
     }
-    const { prompt, category, parentContent, returnOnly } = body as { prompt: string; category: Category; parentContent?: string; returnOnly?: boolean }
+    const { prompt, category, parentContent, returnOnly, campaign_id } = body as { prompt: string; category: Category; parentContent?: string; returnOnly?: boolean; campaign_id?: string | null }
 
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       return NextResponse.json({ error: 'El prompt no puede estar vacío' }, { status: 400 })
@@ -119,6 +119,7 @@ export async function POST(request: NextRequest) {
         prompt: prompt.trim(),
         content,
         category,
+        campaign_id: campaign_id ?? null,
       })
       .select()
       .single()

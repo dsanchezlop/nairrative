@@ -34,7 +34,7 @@ const CATEGORIES: { value: Category | 'todas'; label: string }[] = [
   { value: 'otro', label: '✨ Otro' },
 ]
 
-export default function GenerationList({ refreshKey }: { refreshKey: number }) {
+export default function GenerationList({ refreshKey, campaignId }: { refreshKey: number; campaignId?: string | null }) {
   const [generations, setGenerations] = useState<Generation[]>([])
   const [filter, setFilter] = useState<Category | 'todas'>('todas')
   const [loading, setLoading] = useState(true)
@@ -51,10 +51,14 @@ export default function GenerationList({ refreshKey }: { refreshKey: number }) {
       query = query.eq('category', filter)
     }
 
+    if (campaignId) {
+      query = query.eq('campaign_id', campaignId)
+    }
+
     const { data } = await query
     setGenerations(data ?? [])
     setLoading(false)
-  }, [filter])
+  }, [filter, campaignId])
 
   useEffect(() => {
     fetchGenerations()

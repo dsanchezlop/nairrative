@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import type { Category } from '@/lib/types'
 
+export const maxDuration = 60
+
 const SYSTEM_PROMPTS: Record<Category, string> = {
   personaje: `Eres un narrador experto en juegos de rol de mesa (D&D, Pathfinder, etc.).
 Tu tarea es crear personajes ricos y detallados para partidas de rol.

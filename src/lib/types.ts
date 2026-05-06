@@ -1,16 +1,17 @@
 export type Category = 'personaje' | 'historia' | 'mundo' | 'encuentro' | 'otro'
 
 export const RPG_SYSTEMS = [
-  'D&D 5e',
+  'Dungeons & Dragons 3.5e',
+  'Dungeons & Dragons 5e',
+  'Pathfinder 1e',
   'Pathfinder 2e',
+  'Starfinder',
   'Call of Cthulhu 7e',
   'Warhammer Fantasy 4e',
   'Vampiro: La Mascarada 5e',
   'Star Wars FFG',
-  'Savage Worlds',
   'Shadowrun 6e',
   'Cyberpunk RED',
-  'OSR / Old School',
   'Sistema propio / Homebrew',
   'Otro',
 ] as const

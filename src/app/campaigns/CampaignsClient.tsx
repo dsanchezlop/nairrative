@@ -23,7 +23,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
   const router = useRouter()
   const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns)
   const [name, setName] = useState('')
-  const [gameSystem, setGameSystem] = useState('')
+  const [gameSystem, setGameSystem] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(initialCampaigns.length === 0)
@@ -37,7 +37,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
     if (!user) { toast.error('No autenticado.'); setCreating(false); return }
     const { data, error } = await supabase
       .from('campaigns')
-      .insert({ name: name.trim(), game_system: gameSystem.trim(), user_id: user.id })
+      .insert({ name: name.trim(), game_system: gameSystem ?? '', user_id: user.id })
       .select()
       .single()
     if (error) {
@@ -137,7 +137,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                 </div>
                 <div className="space-y-2">
                   <Label className="text-gray-300">Sistema de juego</Label>
-                  <Select value={gameSystem} onValueChange={setGameSystem}>
+                  <Select value={gameSystem ?? ''} onValueChange={(v) => setGameSystem(v)}>
                     <SelectTrigger className="bg-[#1a1a3a] border-purple-900/50 text-white focus:ring-purple-500">
                       <SelectValue placeholder="Selecciona un sistema..." />
                     </SelectTrigger>

@@ -46,6 +46,27 @@ export async function POST(request: Request) {
   const encodedPrompt = encodeURIComponent(fullPrompt)
   const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=512&nologo=true&model=flux`
 
+  // Verificar que Pollinations devuelve una imagen válida antes de guardar
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 20000)
+  try {
+    const check = await fetch(imageUrl, { method: 'GET', signal: controller.signal })
+    clearTimeout(timeout)
+    const contentType = check.headers.get('content-type') ?? ''
+    if (!check.ok || !contentType.startsWith('image/')) {
+      return NextResponse.json(
+        { error: 'El servicio de imágenes no está disponible ahora. Inténtalo en unos minutos.' },
+        { status: 503 }
+      )
+    }
+  } catch {
+    clearTimeout(timeout)
+    return NextResponse.json(
+      { error: 'El servicio de imágenes tardó demasiado. Inténtalo de nuevo.' },
+      { status: 503 }
+    )
+  }
+
   // Guardar en Supabase
   const { error } = await supabase
     .from('generations')

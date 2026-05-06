@@ -43,6 +43,17 @@ export default function GenerationEditor({ generation }: { generation: Generatio
   const [continuing, setContinuing] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(generation.image_url ?? null)
   const [generatingImage, setGeneratingImage] = useState(false)
+  const [imageLoadError, setImageLoadError] = useState(false)
+
+  async function clearBadImageUrl() {
+    const supabase = createClient()
+    await supabase
+      .from('generations')
+      .update({ image_url: null })
+      .eq('id', generation.id)
+    setImageUrl(null)
+    setImageLoadError(false)
+  }
 
   async function handleContinue() {
     if (!continuePrompt.trim()) return
@@ -331,7 +342,7 @@ export default function GenerationEditor({ generation }: { generation: Generatio
             Ilustración
           </p>
 
-          {imageUrl ? (
+          {imageUrl && !imageLoadError ? (
             <div className="space-y-3">
               <div className="relative rounded-lg overflow-hidden border border-purple-900/30">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -339,7 +350,11 @@ export default function GenerationEditor({ generation }: { generation: Generatio
                   src={imageUrl}
                   alt={`Ilustración de ${title}`}
                   className="w-full object-cover"
-                  onError={() => setImageUrl(null)}
+                  onError={() => {
+                    setImageLoadError(true)
+                    clearBadImageUrl()
+                    toast.error('La imagen no pudo cargarse. Puedes intentar generarla de nuevo.')
+                  }}
                 />
               </div>
               <Button

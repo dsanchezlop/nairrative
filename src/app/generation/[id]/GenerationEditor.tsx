@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Save, Trash2, ArrowLeft, Pencil, X, Wand2 } from 'lucide-react'
+import { Save, Trash2, ArrowLeft, Pencil, X, Wand2, ImageIcon, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Category, Generation } from '@/lib/types'
 import Link from 'next/link'
@@ -41,6 +41,8 @@ export default function GenerationEditor({ generation }: { generation: Generatio
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [continuePrompt, setContinuePrompt] = useState('')
   const [continuing, setContinuing] = useState(false)
+  const [imageUrl, setImageUrl] = useState<string | null>(generation.image_url ?? null)
+  const [generatingImage, setGeneratingImage] = useState(false)
 
   async function handleContinue() {
     if (!continuePrompt.trim()) return
@@ -83,6 +85,33 @@ export default function GenerationEditor({ generation }: { generation: Generatio
       toast.error('Error de conexión. Inténtalo de nuevo.')
     } finally {
       setContinuing(false)
+    }
+  }
+
+  async function handleGenerateImage() {
+    setGeneratingImage(true)
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          generationId: generation.id,
+          title,
+          content,
+          category: generation.category,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error ?? 'Error al generar la imagen')
+        return
+      }
+      setImageUrl(data.imageUrl)
+      toast.success('¡Imagen generada!')
+    } catch {
+      toast.error('Error de conexión. Inténtalo de nuevo.')
+    } finally {
+      setGeneratingImage(false)
     }
   }
 
@@ -291,6 +320,64 @@ export default function GenerationEditor({ generation }: { generation: Generatio
               )
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Panel de imagen */}
+      <Card className="bg-[#12122a] border-purple-900/40 text-white">
+        <CardContent className="pt-5 space-y-4">
+          <p className="text-sm font-medium text-purple-200 flex items-center gap-2">
+            <ImageIcon className="h-4 w-4 text-purple-400" />
+            Ilustración
+          </p>
+
+          {imageUrl ? (
+            <div className="space-y-3">
+              <div className="relative rounded-lg overflow-hidden border border-purple-900/30">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt={`Ilustración de ${title}`}
+                  className="w-full object-cover"
+                  onError={() => setImageUrl(null)}
+                />
+              </div>
+              <Button
+                onClick={handleGenerateImage}
+                disabled={generatingImage}
+                variant="outline"
+                size="sm"
+                className="border-purple-800 text-purple-300 hover:bg-purple-900/30 hover:text-white"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${generatingImage ? 'animate-spin' : ''}`} />
+                {generatingImage ? 'Generando...' : 'Regenerar imagen'}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">
+                Genera una ilustración de fantasía basada en el contenido de este texto. Powered by Pollinations · FLUX.
+              </p>
+              <Button
+                onClick={handleGenerateImage}
+                disabled={generatingImage}
+                className="bg-purple-700 hover:bg-purple-600 text-white w-full sm:w-auto"
+                size="sm"
+              >
+                {generatingImage ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin inline-block h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                    Ilustrando...
+                  </span>
+                ) : (
+                  <>
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Ilustrar este texto
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

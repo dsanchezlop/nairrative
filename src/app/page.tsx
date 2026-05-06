@@ -7,7 +7,7 @@ const FEATURES = [
   {
     icon: Wand2,
     title: 'Generación con IA',
-    description: 'Crea personajes, historias, mundos y encuentros al instante con Groq y Llama.',
+    description: 'Crea personajes, historias, mundos y encuentros al instante con Groq, Llama y Pollinations FLUX.',
   },
   {
     icon: BookOpen,
@@ -44,7 +44,7 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20 max-w-3xl mx-auto w-full">
         <div className="mb-6 inline-flex items-center gap-2 bg-purple-900/30 border border-purple-800/50 rounded-full px-4 py-1.5 text-sm text-purple-300">
           <Wand2 className="h-3.5 w-3.5" />
-          Impulsado por Groq · Llama 3.3
+          Impulsado por Groq · Llama 3.3 · Pollinations FLUX
         </div>
 
         <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">

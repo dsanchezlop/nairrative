@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       console.error('JSON parse error:', parseErr)
       return NextResponse.json({ error: 'Cuerpo de petición inválido' }, { status: 400 })
     }
-    const { prompt, category, parentContent, returnOnly, campaign_id } = body as { prompt: string; category: Category; parentContent?: string; returnOnly?: boolean; campaign_id?: string | null }
+    const { prompt, category, parentContent, returnOnly, campaign_id, game_system } = body as { prompt: string; category: Category; parentContent?: string; returnOnly?: boolean; campaign_id?: string | null; game_system?: string | null }
 
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       return NextResponse.json({ error: 'El prompt no puede estar vacío' }, { status: 400 })
@@ -66,8 +66,13 @@ export async function POST(request: NextRequest) {
     let content: string | null = null
     for (const model of MODELS) {
       try {
+        const baseSystemPrompt = SYSTEM_PROMPTS[category]
+        const systemContent = game_system
+          ? `Sistema de juego de rol: ${game_system}\n\nTen en cuenta las reglas, ambientación, terminología y convenciones propias de ${game_system} al generar el contenido.\n\n${baseSystemPrompt}`
+          : baseSystemPrompt
+
         const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
-          { role: 'system', content: SYSTEM_PROMPTS[category] },
+          { role: 'system', content: systemContent },
         ]
         if (parentContent) {
           messages.push({ role: 'assistant', content: parentContent })

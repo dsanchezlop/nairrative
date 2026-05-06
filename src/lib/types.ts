@@ -1,5 +1,20 @@
 export type Category = 'personaje' | 'historia' | 'mundo' | 'encuentro' | 'otro'
 
+export const RPG_SYSTEMS = [
+  'D&D 5e',
+  'Pathfinder 2e',
+  'Call of Cthulhu 7e',
+  'Warhammer Fantasy 4e',
+  'Vampiro: La Mascarada 5e',
+  'Star Wars FFG',
+  'Savage Worlds',
+  'Shadowrun 6e',
+  'Cyberpunk RED',
+  'OSR / Old School',
+  'Sistema propio / Homebrew',
+  'Otro',
+] as const
+
 export interface Campaign {
   id: string
   user_id: string

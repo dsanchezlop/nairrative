@@ -81,7 +81,7 @@ export default function DashboardClient({ initialCampaigns }: { initialCampaigns
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Columna izquierda: formulario */}
         <div>
-          <GenerationForm onGenerated={() => setRefreshKey((k) => k + 1)} defaultCampaignId={activeCampaign} />
+          <GenerationForm onGenerated={() => setRefreshKey((k) => k + 1)} defaultCampaignId={activeCampaign} gameSystem={activeCampaignData?.game_system ?? null} />
         </div>
 
         {/* Columna derecha: historial */}

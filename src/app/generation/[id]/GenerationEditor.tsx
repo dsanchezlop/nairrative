@@ -31,7 +31,7 @@ const CATEGORY_COLORS: Record<Category, string> = {
   otro: 'bg-blue-900/50 text-blue-300 border-blue-700/50',
 }
 
-export default function GenerationEditor({ generation }: { generation: Generation }) {
+export default function GenerationEditor({ generation, gameSystem }: { generation: Generation; gameSystem?: string | null }) {
   const router = useRouter()
   const [title, setTitle] = useState(generation.title)
   const [content, setContent] = useState(generation.content)
@@ -67,6 +67,7 @@ export default function GenerationEditor({ generation }: { generation: Generatio
           category: generation.category,
           parentContent: content,
           returnOnly: true,
+          game_system: gameSystem ?? null,
         }),
       })
       const data = await res.json()

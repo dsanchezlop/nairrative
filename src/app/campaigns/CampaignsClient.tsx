@@ -10,6 +10,14 @@ import { Label } from '@/components/ui/label'
 import { Swords, Trash2, Plus, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Campaign } from '@/lib/types'
+import { RPG_SYSTEMS } from '@/lib/types'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function CampaignsClient({ initialCampaigns }: { initialCampaigns: Campaign[] }) {
   const router = useRouter()
@@ -129,12 +137,18 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                 </div>
                 <div className="space-y-2">
                   <Label className="text-gray-300">Sistema de juego</Label>
-                  <Input
-                    value={gameSystem}
-                    onChange={(e) => setGameSystem(e.target.value)}
-                    placeholder="Ej: D&D 5e, Pathfinder 2e, Call of Cthulhu..."
-                    className="bg-[#1a1a3a] border-purple-900/50 text-white placeholder:text-gray-600 focus-visible:ring-purple-500"
-                  />
+                  <Select value={gameSystem} onValueChange={setGameSystem}>
+                    <SelectTrigger className="bg-[#1a1a3a] border-purple-900/50 text-white focus:ring-purple-500">
+                      <SelectValue placeholder="Selecciona un sistema..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a3a] border-purple-900/50 text-white">
+                      {RPG_SYSTEMS.map((sys) => (
+                        <SelectItem key={sys} value={sys} className="focus:bg-purple-900/40 focus:text-white">
+                          {sys}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex gap-2">
                   {campaigns.length > 0 && (

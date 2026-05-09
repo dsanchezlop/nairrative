@@ -1,71 +1,88 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Wand2 } from 'lucide-react'
-import type { Category } from '@/lib/types'
-import { toast } from 'sonner'
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Wand2 } from "lucide-react";
+import type { Category } from "@/lib/types";
+import { toast } from "sonner";
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  personaje: '🧙 Personaje',
-  historia: '📖 Historia / Aventura',
-  mundo: '🌍 Worldbuilding',
-  encuentro: '⚔️ Encuentro',
-  otro: '✨ Otro',
-}
+  personaje: "🧙 Personaje",
+  historia: "📖 Historia / Aventura",
+  mundo: "🌍 Worldbuilding",
+  encuentro: "⚔️ Encuentro",
+  otro: "✨ Otro",
+};
 
 const PLACEHOLDERS: Record<Category, string> = {
-  personaje: 'Ej: Un elfo proscrito que fue traicionado por su propio clan y ahora busca redención como ladrón de sombras...',
-  historia: 'Ej: Una aventura de investigación en una ciudad portuaria donde los pescadores desaparecen misteriosamente por las noches...',
-  mundo: 'Ej: Una ciudad flotante gobernada por un gremio de magos que controla el comercio de runas en todo el continente...',
-  encuentro: 'Ej: Un encuentro en una posada donde los jugadores descubren que el posadero es en realidad un dragón anciano disfrazado...',
-  otro: 'Ej: Una espada maldita que susurra los nombres de sus víctimas anteriores...',
-}
+  personaje:
+    "Ej: Un elfo proscrito que fue traicionado por su propio clan y ahora busca redención como ladrón de sombras...",
+  historia:
+    "Ej: Una aventura de investigación en una ciudad portuaria donde los pescadores desaparecen misteriosamente por las noches...",
+  mundo:
+    "Ej: Una ciudad flotante gobernada por un gremio de magos que controla el comercio de runas en todo el continente...",
+  encuentro:
+    "Ej: Un encuentro en una posada donde los jugadores descubren que el posadero es en realidad un dragón anciano disfrazado...",
+  otro: "Ej: Una espada maldita que susurra los nombres de sus víctimas anteriores...",
+};
 
-export default function GenerationForm({ onGenerated, defaultCampaignId, gameSystem }: { onGenerated: () => void; defaultCampaignId?: string | null; gameSystem?: string | null }) {
-  const router = useRouter()
-  const [category, setCategory] = useState<Category>('personaje')
-  const [prompt, setPrompt] = useState('')
-  const [loading, setLoading] = useState(false)
+export default function GenerationForm({
+  onGenerated,
+  defaultCampaignId,
+  gameSystem,
+}: {
+  onGenerated: () => void;
+  defaultCampaignId?: string | null;
+  gameSystem?: string | null;
+}) {
+  const router = useRouter();
+  const [category, setCategory] = useState<Category>("personaje");
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!prompt.trim()) return
+    e.preventDefault();
+    if (!prompt.trim()) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, category, campaign_id: defaultCampaignId ?? null, game_system: gameSystem ?? null }),
-      })
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          category,
+          campaign_id: defaultCampaignId ?? null,
+          game_system: gameSystem ?? null,
+        }),
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error ?? 'Error al generar el contenido')
-        return
+        toast.error(data.error ?? "Error al generar el contenido");
+        return;
       }
 
-      toast.success('¡Texto generado y guardado!')
-      setPrompt('')
-      onGenerated()
-      router.push(`/generation/${data.generation.id}`)
+      toast.success("¡Texto generado y guardado!");
+      setPrompt("");
+      onGenerated();
+      router.push(`/generation/${data.generation.id}`);
     } catch {
-      toast.error('Error de conexión. Inténtalo de nuevo.')
+      toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -81,13 +98,20 @@ export default function GenerationForm({ onGenerated, defaultCampaignId, gameSys
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label className="text-gray-300">Tipo de contenido</Label>
-            <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+            <Select
+              value={category}
+              onValueChange={(v) => setCategory(v as Category)}
+            >
               <SelectTrigger className="bg-[#1a1a3a] border-purple-900/50 text-white focus:ring-purple-500">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#1a1a3a] border-purple-900/50 text-white">
                 {(Object.keys(CATEGORY_LABELS) as Category[]).map((cat) => (
-                  <SelectItem key={cat} value={cat} className="focus:bg-purple-900/40 focus:text-white">
+                  <SelectItem
+                    key={cat}
+                    value={cat}
+                    className="focus:bg-purple-900/40 focus:text-white"
+                  >
                     {CATEGORY_LABELS[cat]}
                   </SelectItem>
                 ))}
@@ -127,5 +151,5 @@ export default function GenerationForm({ onGenerated, defaultCampaignId, gameSys
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

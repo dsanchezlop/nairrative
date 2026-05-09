@@ -1,38 +1,48 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Scroll } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Scroll } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
-      setError('Credenciales incorrectas. Verifica tu email y contraseña.')
-      setLoading(false)
-      return
+      setError("Credenciales incorrectas. Verifica tu email y contraseña.");
+      setLoading(false);
+      return;
     }
 
-    router.push('/dashboard')
-    router.refresh()
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -41,7 +51,9 @@ export default function LoginPage() {
         <div className="flex justify-center mb-2">
           <Scroll className="h-10 w-10 text-purple-400" />
         </div>
-        <CardTitle className="text-2xl font-bold text-purple-200">Bienvenido de nuevo</CardTitle>
+        <CardTitle className="text-2xl font-bold text-purple-200">
+          Bienvenido de nuevo
+        </CardTitle>
         <CardDescription className="text-gray-400">
           Accede a tu grimorio de historias
         </CardDescription>
@@ -55,7 +67,9 @@ export default function LoginPage() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-300">Email</Label>
+            <Label htmlFor="email" className="text-gray-300">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -67,7 +81,9 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-300">Contraseña</Label>
+            <Label htmlFor="password" className="text-gray-300">
+              Contraseña
+            </Label>
             <Input
               id="password"
               type="password"
@@ -86,16 +102,19 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold"
           >
-            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
           <p className="text-sm text-gray-400">
-            ¿No tienes cuenta?{' '}
-            <Link href="/register" className="text-purple-400 hover:text-purple-300 underline">
+            ¿No tienes cuenta?{" "}
+            <Link
+              href="/register"
+              className="text-purple-400 hover:text-purple-300 underline"
+            >
               Regístrate
             </Link>
           </p>
         </CardFooter>
       </form>
     </Card>
-  )
+  );
 }

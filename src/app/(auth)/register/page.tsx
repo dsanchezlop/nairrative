@@ -1,48 +1,55 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Scroll } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Scroll } from "lucide-react";
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleRegister(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.')
-      return
+      setError("Las contraseñas no coinciden.");
+      return;
     }
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
-      return
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      return;
     }
 
-    setLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({ email, password })
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
+      setError(error.message);
+      setLoading(false);
+      return;
     }
 
-    router.push('/dashboard')
-    router.refresh()
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -51,7 +58,9 @@ export default function RegisterPage() {
         <div className="flex justify-center mb-2">
           <Scroll className="h-10 w-10 text-purple-400" />
         </div>
-        <CardTitle className="text-2xl font-bold text-purple-200">Crea tu cuenta</CardTitle>
+        <CardTitle className="text-2xl font-bold text-purple-200">
+          Crea tu cuenta
+        </CardTitle>
         <CardDescription className="text-gray-400">
           Comienza a forjar tus historias
         </CardDescription>
@@ -65,7 +74,9 @@ export default function RegisterPage() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-300">Email</Label>
+            <Label htmlFor="email" className="text-gray-300">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -77,7 +88,9 @@ export default function RegisterPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-300">Contraseña</Label>
+            <Label htmlFor="password" className="text-gray-300">
+              Contraseña
+            </Label>
             <Input
               id="password"
               type="password"
@@ -89,7 +102,9 @@ export default function RegisterPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm" className="text-gray-300">Confirmar contraseña</Label>
+            <Label htmlFor="confirm" className="text-gray-300">
+              Confirmar contraseña
+            </Label>
             <Input
               id="confirm"
               type="password"
@@ -108,16 +123,19 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold"
           >
-            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </Button>
           <p className="text-sm text-gray-400">
-            ¿Ya tienes cuenta?{' '}
-            <Link href="/login" className="text-purple-400 hover:text-purple-300 underline">
+            ¿Ya tienes cuenta?{" "}
+            <Link
+              href="/login"
+              className="text-purple-400 hover:text-purple-300 underline"
+            >
               Inicia sesión
             </Link>
           </p>
         </CardFooter>
       </form>
     </Card>
-  )
+  );
 }

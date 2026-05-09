@@ -1,87 +1,102 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
-import Groq from 'groq-sdk'
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import Groq from "groq-sdk";
 
-export const maxDuration = 30
+export const maxDuration = 30;
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user)
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const { generationId, title, content, category, game_system } = await request.json()
+  const { generationId, title, content, category, game_system } =
+    await request.json();
   if (!generationId || !content) {
-    return NextResponse.json({ error: 'Faltan parámetros' }, { status: 400 })
+    return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
   }
 
   // Generar prompt visual con Groq
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
-  let imagePrompt = title
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  let imagePrompt = title;
 
   const systemContext = game_system
     ? `You are a specialist in image generation prompts for ${game_system} tabletop RPG art. The visual style should match the aesthetic, setting, and tone of ${game_system}.`
-    : 'You are a specialist in image generation prompts for tabletop RPG art.'
+    : "You are a specialist in image generation prompts for tabletop RPG art.";
 
   try {
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
-          role: 'system',
+          role: "system",
           content: `${systemContext} Generate ONE prompt in English, 1-2 sentences, visually describing the following RPG content for an illustration. Return ONLY the prompt, no explanations.`,
         },
         {
-          role: 'user',
+          role: "user",
           content: `Category: ${category}\nTitle: ${title}\n\n${content.substring(0, 800)}`,
         },
       ],
       temperature: 0.7,
       max_tokens: 120,
-    })
-    imagePrompt = completion.choices[0]?.message?.content?.trim() ?? title
+    });
+    imagePrompt = completion.choices[0]?.message?.content?.trim() ?? title;
   } catch {
     imagePrompt = game_system
       ? `${game_system} RPG ${category}: ${title}`
-      : `RPG ${category}: ${title}`
+      : `RPG ${category}: ${title}`;
   }
 
   // Construir URL de Pollinations
-  const stylePrefix = game_system ? `${game_system} RPG art,` : 'tabletop RPG art,'
-  const fullPrompt = `${stylePrefix} ${imagePrompt}, detailed, dramatic lighting, digital painting`
-  const encodedPrompt = encodeURIComponent(fullPrompt)
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=512&nologo=true&model=flux`
+  const stylePrefix = game_system
+    ? `${game_system} RPG art,`
+    : "tabletop RPG art,";
+  const fullPrompt = `${stylePrefix} ${imagePrompt}, detailed, dramatic lighting, digital painting`;
+  const encodedPrompt = encodeURIComponent(fullPrompt);
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=512&nologo=true&model=flux`;
 
   // Verificar que Pollinations devuelve una imagen válida antes de guardar
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 20000)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
   try {
-    const check = await fetch(imageUrl, { method: 'GET', signal: controller.signal })
-    clearTimeout(timeout)
-    const contentType = check.headers.get('content-type') ?? ''
-    if (!check.ok || !contentType.startsWith('image/')) {
+    const check = await fetch(imageUrl, {
+      method: "GET",
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    const contentType = check.headers.get("content-type") ?? "";
+    if (!check.ok || !contentType.startsWith("image/")) {
       return NextResponse.json(
-        { error: 'El servicio de imágenes no está disponible ahora. Inténtalo en unos minutos.' },
-        { status: 503 }
-      )
+        {
+          error:
+            "El servicio de imágenes no está disponible ahora. Inténtalo en unos minutos.",
+        },
+        { status: 503 },
+      );
     }
   } catch {
-    clearTimeout(timeout)
+    clearTimeout(timeout);
     return NextResponse.json(
-      { error: 'El servicio de imágenes tardó demasiado. Inténtalo de nuevo.' },
-      { status: 503 }
-    )
+      { error: "El servicio de imágenes tardó demasiado. Inténtalo de nuevo." },
+      { status: 503 },
+    );
   }
 
   // Guardar en Supabase
   const { error } = await supabase
-    .from('generations')
+    .from("generations")
     .update({ image_url: imageUrl })
-    .eq('id', generationId)
-    .eq('user_id', user.id)
+    .eq("id", generationId)
+    .eq("user_id", user.id);
 
   if (error) {
-    return NextResponse.json({ error: 'Error al guardar la imagen' }, { status: 500 })
+    return NextResponse.json(
+      { error: "Error al guardar la imagen" },
+      { status: 500 },
+    );
   }
 
-  return NextResponse.json({ imageUrl })
+  return NextResponse.json({ imageUrl });
 }

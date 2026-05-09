@@ -1,67 +1,84 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Save, Trash2, ArrowLeft, Pencil, X, Wand2, ImageIcon, RefreshCw } from 'lucide-react'
-import { toast } from 'sonner'
-import type { Category, Generation } from '@/lib/types'
-import Link from 'next/link'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Save,
+  Trash2,
+  ArrowLeft,
+  Pencil,
+  X,
+  Wand2,
+  ImageIcon,
+  RefreshCw,
+} from "lucide-react";
+import { toast } from "sonner";
+import type { Category, Generation } from "@/lib/types";
+import Link from "next/link";
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  personaje: '🧙 Personaje',
-  historia: '📖 Historia',
-  mundo: '🌍 Mundo',
-  encuentro: '⚔️ Encuentro',
-  otro: '✨ Otro',
-}
+  personaje: "🧙 Personaje",
+  historia: "📖 Historia",
+  mundo: "🌍 Mundo",
+  encuentro: "⚔️ Encuentro",
+  otro: "✨ Otro",
+};
 
 const CATEGORY_COLORS: Record<Category, string> = {
-  personaje: 'bg-violet-900/50 text-violet-300 border-violet-700/50',
-  historia: 'bg-amber-900/50 text-amber-300 border-amber-700/50',
-  mundo: 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50',
-  encuentro: 'bg-red-900/50 text-red-300 border-red-700/50',
-  otro: 'bg-blue-900/50 text-blue-300 border-blue-700/50',
-}
+  personaje: "bg-violet-900/50 text-violet-300 border-violet-700/50",
+  historia: "bg-amber-900/50 text-amber-300 border-amber-700/50",
+  mundo: "bg-emerald-900/50 text-emerald-300 border-emerald-700/50",
+  encuentro: "bg-red-900/50 text-red-300 border-red-700/50",
+  otro: "bg-blue-900/50 text-blue-300 border-blue-700/50",
+};
 
-export default function GenerationEditor({ generation, gameSystem }: { generation: Generation; gameSystem?: string | null }) {
-  const router = useRouter()
-  const [title, setTitle] = useState(generation.title)
-  const [content, setContent] = useState(generation.content)
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [continuePrompt, setContinuePrompt] = useState('')
-  const [continuing, setContinuing] = useState(false)
-  const [imageUrl, setImageUrl] = useState<string | null>(generation.image_url ?? null)
-  const [generatingImage, setGeneratingImage] = useState(false)
-  const [imageLoadError, setImageLoadError] = useState(false)
+export default function GenerationEditor({
+  generation,
+  gameSystem,
+}: {
+  generation: Generation;
+  gameSystem?: string | null;
+}) {
+  const router = useRouter();
+  const [title, setTitle] = useState(generation.title);
+  const [content, setContent] = useState(generation.content);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [continuePrompt, setContinuePrompt] = useState("");
+  const [continuing, setContinuing] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    generation.image_url ?? null,
+  );
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   async function clearBadImageUrl() {
-    const supabase = createClient()
+    const supabase = createClient();
     await supabase
-      .from('generations')
+      .from("generations")
       .update({ image_url: null })
-      .eq('id', generation.id)
-    setImageUrl(null)
-    setImageLoadError(false)
+      .eq("id", generation.id);
+    setImageUrl(null);
+    setImageLoadError(false);
   }
 
   async function handleContinue() {
-    if (!continuePrompt.trim()) return
-    setContinuing(true)
+    if (!continuePrompt.trim()) return;
+    setContinuing(true);
     try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: continuePrompt,
           category: generation.category,
@@ -69,43 +86,43 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
           returnOnly: true,
           game_system: gameSystem ?? null,
         }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? 'Error al generar la continuación')
-        return
+        toast.error(data.error ?? "Error al generar la continuación");
+        return;
       }
 
-      const separator = `\n\n---\n\n**Continuación:** ${continuePrompt.trim()}\n\n`
-      const updatedContent = content + separator + data.content
+      const separator = `\n\n---\n\n**Continuación:** ${continuePrompt.trim()}\n\n`;
+      const updatedContent = content + separator + data.content;
 
-      const supabase = createClient()
+      const supabase = createClient();
       const { error } = await supabase
-        .from('generations')
+        .from("generations")
         .update({ content: updatedContent })
-        .eq('id', generation.id)
+        .eq("id", generation.id);
 
       if (error) {
-        toast.error('Error al guardar la continuación.')
-        return
+        toast.error("Error al guardar la continuación.");
+        return;
       }
 
-      setContent(updatedContent)
-      setContinuePrompt('')
-      toast.success('¡Continuación añadida!')
+      setContent(updatedContent);
+      setContinuePrompt("");
+      toast.success("¡Continuación añadida!");
     } catch {
-      toast.error('Error de conexión. Inténtalo de nuevo.')
+      toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
-      setContinuing(false)
+      setContinuing(false);
     }
   }
 
   async function handleGenerateImage() {
-    setGeneratingImage(true)
+    setGeneratingImage(true);
     try {
-      const res = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           generationId: generation.id,
           title,
@@ -113,66 +130,70 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
           category: generation.category,
           game_system: gameSystem ?? null,
         }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? 'Error al generar la imagen')
-        return
+        toast.error(data.error ?? "Error al generar la imagen");
+        return;
       }
-      setImageUrl(data.imageUrl)
-      toast.success('¡Imagen generada!')
+      setImageUrl(data.imageUrl);
+      toast.success("¡Imagen generada!");
     } catch {
-      toast.error('Error de conexión. Inténtalo de nuevo.')
+      toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
-      setGeneratingImage(false)
+      setGeneratingImage(false);
     }
   }
 
   async function handleSave() {
     if (!title.trim() || !content.trim()) {
-      toast.error('El título y el contenido no pueden estar vacíos.')
-      return
+      toast.error("El título y el contenido no pueden estar vacíos.");
+      return;
     }
-    setSaving(true)
-    const supabase = createClient()
+    setSaving(true);
+    const supabase = createClient();
     const { error } = await supabase
-      .from('generations')
+      .from("generations")
       .update({ title: title.trim(), content: content.trim() })
-      .eq('id', generation.id)
+      .eq("id", generation.id);
 
     if (error) {
-      toast.error('Error al guardar los cambios.')
+      toast.error("Error al guardar los cambios.");
     } else {
-      toast.success('Cambios guardados.')
-      setEditing(false)
+      toast.success("Cambios guardados.");
+      setEditing(false);
     }
-    setSaving(false)
+    setSaving(false);
   }
 
   function handleCancelEdit() {
-    setTitle(generation.title)
-    setContent(generation.content)
-    setEditing(false)
+    setTitle(generation.title);
+    setContent(generation.content);
+    setEditing(false);
   }
 
   async function handleDelete() {
-    setDeleting(true)
-    const supabase = createClient()
+    setDeleting(true);
+    const supabase = createClient();
     const { error } = await supabase
-      .from('generations')
+      .from("generations")
       .delete()
-      .eq('id', generation.id)
+      .eq("id", generation.id);
 
     if (error) {
-      toast.error('Error al eliminar.')
-      setDeleting(false)
-      setConfirmDelete(false)
-      return
+      toast.error("Error al eliminar.");
+      setDeleting(false);
+      setConfirmDelete(false);
+      return;
     }
 
-    toast.success('Texto eliminado.')
-    router.push(generation.campaign_id ? `/dashboard?campaign=${generation.campaign_id}` : '/campaigns')
-    router.refresh()
+    toast.success("Texto eliminado.");
+    router.push(
+      generation.campaign_id
+        ? `/dashboard?campaign=${generation.campaign_id}`
+        : "/campaigns",
+    );
+    router.refresh();
   }
 
   return (
@@ -180,8 +201,15 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
       {/* Cabecera */}
       <div className="flex items-center gap-3">
         <Link
-          href={generation.campaign_id ? `/dashboard?campaign=${generation.campaign_id}` : '/campaigns'}
-          className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-gray-400 hover:text-white hover:bg-purple-900/30')}
+          href={
+            generation.campaign_id
+              ? `/dashboard?campaign=${generation.campaign_id}`
+              : "/campaigns"
+          }
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "text-gray-400 hover:text-white hover:bg-purple-900/30",
+          )}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Volver
@@ -199,20 +227,20 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
               {CATEGORY_LABELS[generation.category as Category]}
             </Badge>
             <span className="text-xs text-gray-500">
-              Creado el{' '}
-              {new Date(generation.created_at).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
+              Creado el{" "}
+              {new Date(generation.created_at).toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
               })}
             </span>
             {generation.updated_at !== generation.created_at && (
               <span className="text-xs text-gray-600">
-                · Editado el{' '}
-                {new Date(generation.updated_at).toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
+                · Editado el{" "}
+                {new Date(generation.updated_at).toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
                 })}
               </span>
             )}
@@ -244,7 +272,9 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
           <div className="space-y-2">
             {editing ? (
               <>
-                <Label className="text-gray-400 text-xs">Contenido generado</Label>
+                <Label className="text-gray-400 text-xs">
+                  Contenido generado
+                </Label>
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -273,7 +303,7 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
                     size="sm"
                   >
                     <Save className="h-4 w-4 mr-1" />
-                    {saving ? 'Guardando...' : 'Guardar cambios'}
+                    {saving ? "Guardando..." : "Guardar cambios"}
                   </Button>
                   <Button
                     onClick={handleCancelEdit}
@@ -299,8 +329,8 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
             </div>
 
             {/* Eliminar */}
-            {!editing && (
-              confirmDelete ? (
+            {!editing &&
+              (confirmDelete ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-red-400">¿Seguro?</span>
                   <Button
@@ -309,7 +339,7 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
                     size="sm"
                     className="bg-red-800 hover:bg-red-700 text-white"
                   >
-                    {deleting ? 'Eliminando...' : 'Sí, eliminar'}
+                    {deleting ? "Eliminando..." : "Sí, eliminar"}
                   </Button>
                   <Button
                     onClick={() => setConfirmDelete(false)}
@@ -330,8 +360,7 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
                   <Trash2 className="h-4 w-4 mr-1" />
                   Eliminar
                 </Button>
-              )
-            )}
+              ))}
           </div>
         </CardContent>
       </Card>
@@ -353,9 +382,11 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
                   alt={`Ilustración de ${title}`}
                   className="w-full object-cover"
                   onError={() => {
-                    setImageLoadError(true)
-                    clearBadImageUrl()
-                    toast.error('La imagen no pudo cargarse. Puedes intentar generarla de nuevo.')
+                    setImageLoadError(true);
+                    clearBadImageUrl();
+                    toast.error(
+                      "La imagen no pudo cargarse. Puedes intentar generarla de nuevo.",
+                    );
                   }}
                 />
               </div>
@@ -366,14 +397,17 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
                 size="sm"
                 className="border-purple-800 text-purple-300 hover:bg-purple-900/30 hover:text-white"
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${generatingImage ? 'animate-spin' : ''}`} />
-                {generatingImage ? 'Generando...' : 'Regenerar imagen'}
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${generatingImage ? "animate-spin" : ""}`}
+                />
+                {generatingImage ? "Generando..." : "Regenerar imagen"}
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-gray-500">
-                Genera una ilustración de fantasía basada en el contenido de este texto. Powered by Pollinations · FLUX.
+                Genera una ilustración de fantasía basada en el contenido de
+                este texto. Powered by Pollinations · FLUX.
               </p>
               <Button
                 onClick={handleGenerateImage}
@@ -406,7 +440,8 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
             Continuar o elaborar
           </p>
           <p className="text-xs text-gray-500">
-            Describe qué quieres desarrollar a partir de lo generado arriba. La IA usará ese contenido como contexto.
+            Describe qué quieres desarrollar a partir de lo generado arriba. La
+            IA usará ese contenido como contexto.
           </p>
           <Textarea
             value={continuePrompt}
@@ -422,10 +457,10 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
             size="sm"
           >
             <Wand2 className="h-4 w-4 mr-2" />
-            {continuing ? 'Generando...' : 'Generar continuación'}
+            {continuing ? "Generando..." : "Generar continuación"}
           </Button>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

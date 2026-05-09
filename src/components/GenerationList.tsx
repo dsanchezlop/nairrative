@@ -1,68 +1,74 @@
-'use client'
+"use client";
 
-import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ChevronRight, BookOpen } from 'lucide-react'
-import type { Category, Generation } from '@/lib/types'
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, BookOpen } from "lucide-react";
+import type { Category, Generation } from "@/lib/types";
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  personaje: '🧙 Personaje',
-  historia: '📖 Historia',
-  mundo: '🌍 Mundo',
-  encuentro: '⚔️ Encuentro',
-  otro: '✨ Otro',
-}
+  personaje: "🧙 Personaje",
+  historia: "📖 Historia",
+  mundo: "🌍 Mundo",
+  encuentro: "⚔️ Encuentro",
+  otro: "✨ Otro",
+};
 
 const CATEGORY_COLORS: Record<Category, string> = {
-  personaje: 'bg-violet-900/50 text-violet-300 border-violet-700/50',
-  historia: 'bg-amber-900/50 text-amber-300 border-amber-700/50',
-  mundo: 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50',
-  encuentro: 'bg-red-900/50 text-red-300 border-red-700/50',
-  otro: 'bg-blue-900/50 text-blue-300 border-blue-700/50',
-}
+  personaje: "bg-violet-900/50 text-violet-300 border-violet-700/50",
+  historia: "bg-amber-900/50 text-amber-300 border-amber-700/50",
+  mundo: "bg-emerald-900/50 text-emerald-300 border-emerald-700/50",
+  encuentro: "bg-red-900/50 text-red-300 border-red-700/50",
+  otro: "bg-blue-900/50 text-blue-300 border-blue-700/50",
+};
 
-const CATEGORIES: { value: Category | 'todas'; label: string }[] = [
-  { value: 'todas', label: 'Todas' },
-  { value: 'personaje', label: '🧙 Personaje' },
-  { value: 'historia', label: '📖 Historia' },
-  { value: 'mundo', label: '🌍 Mundo' },
-  { value: 'encuentro', label: '⚔️ Encuentro' },
-  { value: 'otro', label: '✨ Otro' },
-]
+const CATEGORIES: { value: Category | "todas"; label: string }[] = [
+  { value: "todas", label: "Todas" },
+  { value: "personaje", label: "🧙 Personaje" },
+  { value: "historia", label: "📖 Historia" },
+  { value: "mundo", label: "🌍 Mundo" },
+  { value: "encuentro", label: "⚔️ Encuentro" },
+  { value: "otro", label: "✨ Otro" },
+];
 
-export default function GenerationList({ refreshKey, campaignId }: { refreshKey: number; campaignId?: string | null }) {
-  const [generations, setGenerations] = useState<Generation[]>([])
-  const [filter, setFilter] = useState<Category | 'todas'>('todas')
-  const [loading, setLoading] = useState(true)
+export default function GenerationList({
+  refreshKey,
+  campaignId,
+}: {
+  refreshKey: number;
+  campaignId?: string | null;
+}) {
+  const [generations, setGenerations] = useState<Generation[]>([]);
+  const [filter, setFilter] = useState<Category | "todas">("todas");
+  const [loading, setLoading] = useState(true);
 
   const fetchGenerations = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
+    setLoading(true);
+    const supabase = createClient();
     let query = supabase
-      .from('generations')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("generations")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    if (filter !== 'todas') {
-      query = query.eq('category', filter)
+    if (filter !== "todas") {
+      query = query.eq("category", filter);
     }
 
     if (campaignId) {
-      query = query.eq('campaign_id', campaignId)
+      query = query.eq("campaign_id", campaignId);
     }
 
-    const { data } = await query
-    setGenerations(data ?? [])
-    setLoading(false)
-  }, [filter, campaignId])
+    const { data } = await query;
+    setGenerations(data ?? []);
+    setLoading(false);
+  }, [filter, campaignId]);
 
   useEffect(() => {
-    fetchGenerations()
-  }, [fetchGenerations, refreshKey])
+    fetchGenerations();
+  }, [fetchGenerations, refreshKey]);
 
   return (
     <div className="space-y-4">
@@ -74,8 +80,8 @@ export default function GenerationList({ refreshKey, campaignId }: { refreshKey:
             onClick={() => setFilter(cat.value)}
             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors border ${
               filter === cat.value
-                ? 'bg-purple-700 text-white border-purple-500'
-                : 'bg-[#1a1a3a] text-gray-400 border-purple-900/30 hover:border-purple-600 hover:text-gray-200'
+                ? "bg-purple-700 text-white border-purple-500"
+                : "bg-[#1a1a3a] text-gray-400 border-purple-900/30 hover:border-purple-600 hover:text-gray-200"
             }`}
           >
             {cat.label}
@@ -87,15 +93,18 @@ export default function GenerationList({ refreshKey, campaignId }: { refreshKey:
       {loading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 rounded-lg bg-[#12122a] animate-pulse border border-purple-900/20" />
+            <div
+              key={i}
+              className="h-20 rounded-lg bg-[#12122a] animate-pulse border border-purple-900/20"
+            />
           ))}
         </div>
       ) : generations.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="h-12 w-12 text-purple-900 mb-3" />
           <p className="text-gray-500 text-sm">
-            {filter === 'todas'
-              ? 'Aún no has generado ningún texto. ¡Empieza arriba!'
+            {filter === "todas"
+              ? "Aún no has generado ningún texto. ¡Empieza arriba!"
               : `No tienes textos de tipo "${CATEGORY_LABELS[filter as Category]}".`}
           </p>
         </div>
@@ -114,15 +123,19 @@ export default function GenerationList({ refreshKey, campaignId }: { refreshKey:
                         {CATEGORY_LABELS[gen.category as Category]}
                       </Badge>
                       <span className="text-xs text-gray-500">
-                        {new Date(gen.created_at).toLocaleDateString('es-ES', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
+                        {new Date(gen.created_at).toLocaleDateString("es-ES", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
                         })}
                       </span>
                     </div>
-                    <p className="text-gray-200 font-medium truncate">{gen.title}</p>
-                    <p className="text-gray-500 text-xs truncate">{gen.prompt}</p>
+                    <p className="text-gray-200 font-medium truncate">
+                      {gen.title}
+                    </p>
+                    <p className="text-gray-500 text-xs truncate">
+                      {gen.prompt}
+                    </p>
                   </div>
                   <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-purple-400 transition-colors flex-shrink-0" />
                 </CardContent>
@@ -132,5 +145,5 @@ export default function GenerationList({ refreshKey, campaignId }: { refreshKey:
         </div>
       )}
     </div>
-  )
+  );
 }

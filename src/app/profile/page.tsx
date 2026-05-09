@@ -1,12 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import ProfileClient from './ProfileClient'
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import ProfileClient from "./ProfileClient";
 
 export default async function ProfilePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!user) redirect('/login')
+  if (!user) redirect("/login");
 
-  return <ProfileClient email={user.email ?? ''} />
+  return <ProfileClient email={user.email ?? ""} />;
 }

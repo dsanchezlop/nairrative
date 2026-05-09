@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Lock, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import Navbar from "@/components/Navbar";
 
 export default function ProfileClient({ email }: { email: string }) {
   const router = useRouter();
@@ -66,7 +67,9 @@ export default function ProfileClient({ email }: { email: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d1a] px-4 py-10">
+    <div className="min-h-screen bg-[#0d0d1a] flex flex-col">
+      <Navbar />
+      <div className="flex-1 px-4 py-10">
       <div className="max-w-lg mx-auto space-y-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-purple-200 flex items-center gap-2">
@@ -198,6 +201,7 @@ export default function ProfileClient({ email }: { email: string }) {
             )}
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

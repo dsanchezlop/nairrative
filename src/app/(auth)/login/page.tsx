@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Scroll } from "lucide-react";
+import { Scroll, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,6 +48,15 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-md bg-[#12122a] border-purple-900/40 text-white shadow-2xl">
       <CardHeader className="space-y-2 text-center">
+        <div className="flex justify-start mb-1">
+          <Link
+            href="/"
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-purple-400 transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Volver al inicio
+          </Link>
+        </div>
         <div className="flex justify-center mb-2">
           <Scroll className="h-10 w-10 text-purple-400" />
         </div>
@@ -100,7 +109,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold"
+            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold border border-purple-400/30"
           >
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>

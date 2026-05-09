@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
-    // Parsear body
+    // Parsear el cuerpo de la petición
     let body: { prompt?: string; category?: Category; parentContent?: string; returnOnly?: boolean; campaign_id?: string | null }
     try {
       body = await request.json()
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Categoría no válida' }, { status: 400 })
     }
 
-    // Llamar a Groq (con fallback automático si hay rate limit)
+    // Llamar a Groq (si llegamos al límite de tokens, cambiamos a llama)
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
     const MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
 
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No se pudo generar contenido.' }, { status: 500 })
     }
 
-    // Si returnOnly, devolver el contenido sin guardar en DB
+    
     if (returnOnly) {
       return NextResponse.json({ content })
     }

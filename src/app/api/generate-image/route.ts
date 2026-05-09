@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const { generationId, title, content, category } = await request.json()
+  const { generationId, title, content, category, game_system } = await request.json()
   if (!generationId || !content) {
     return NextResponse.json({ error: 'Faltan parámetros' }, { status: 400 })
   }
@@ -18,14 +18,17 @@ export async function POST(request: Request) {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
   let imagePrompt = title
 
+  const systemContext = game_system
+    ? `You are a specialist in image generation prompts for ${game_system} tabletop RPG art. The visual style should match the aesthetic, setting, and tone of ${game_system}.`
+    : 'You are a specialist in image generation prompts for tabletop RPG art.'
+
   try {
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'system',
-          content:
-            'You are a specialist in image generation prompts for fantasy art. Generate ONE prompt in English, 1-2 sentences, visually describing the following RPG content for an epic fantasy illustration. Return ONLY the prompt, no explanations.',
+          content: `${systemContext} Generate ONE prompt in English, 1-2 sentences, visually describing the following RPG content for an illustration. Return ONLY the prompt, no explanations.`,
         },
         {
           role: 'user',
@@ -37,12 +40,14 @@ export async function POST(request: Request) {
     })
     imagePrompt = completion.choices[0]?.message?.content?.trim() ?? title
   } catch {
-    // Si falla Groq, usamos el título como fallback
-    imagePrompt = `${category} RPG character or scene: ${title}`
+    imagePrompt = game_system
+      ? `${game_system} RPG ${category}: ${title}`
+      : `RPG ${category}: ${title}`
   }
 
-  // Construir URL de Pollinations (la imagen se genera al cargarla)
-  const fullPrompt = `fantasy RPG art, ${imagePrompt}, detailed, epic, dramatic lighting, digital painting`
+  // Construir URL de Pollinations
+  const stylePrefix = game_system ? `${game_system} RPG art,` : 'tabletop RPG art,'
+  const fullPrompt = `${stylePrefix} ${imagePrompt}, detailed, dramatic lighting, digital painting`
   const encodedPrompt = encodeURIComponent(fullPrompt)
   const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=512&nologo=true&model=flux`
 

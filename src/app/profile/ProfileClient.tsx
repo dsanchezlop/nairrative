@@ -1,74 +1,73 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { User, Lock, Trash2, AlertTriangle } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { User, Lock, Trash2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ProfileClient({ email }: { email: string }) {
-  const router = useRouter()
+  const router = useRouter();
 
   // Cambio de contraseña
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [savingPassword, setSavingPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
 
   // Eliminar cuenta
-  const [deleteConfirm, setDeleteConfirm] = useState('')
-  const [deleting, setDeleting] = useState(false)
-  const [showDeleteForm, setShowDeleteForm] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
 
   async function handleChangePassword(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
     if (newPassword !== confirmPassword) {
-      toast.error('Las contraseñas no coinciden.')
-      return
+      toast.error("Las contraseñas no coinciden.");
+      return;
     }
     if (newPassword.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres.')
-      return
+      toast.error("La contraseña debe tener al menos 6 caracteres.");
+      return;
     }
-    setSavingPassword(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setSavingPassword(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      toast.error('Error al cambiar la contraseña.')
+      toast.error("Error al cambiar la contraseña.");
     } else {
-      toast.success('Contraseña actualizada.')
-      setNewPassword('')
-      setConfirmPassword('')
+      toast.success("Contraseña actualizada.");
+      setNewPassword("");
+      setConfirmPassword("");
     }
-    setSavingPassword(false)
+    setSavingPassword(false);
   }
 
   async function handleDeleteAccount() {
     if (deleteConfirm !== email) {
-      toast.error('El email no coincide.')
-      return
+      toast.error("El email no coincide.");
+      return;
     }
-    setDeleting(true)
-    const res = await fetch('/api/profile/delete', { method: 'DELETE' })
+    setDeleting(true);
+    const res = await fetch("/api/profile/delete", { method: "DELETE" });
     if (!res.ok) {
-      const data = await res.json()
-      toast.error(data.error ?? 'Error al eliminar la cuenta.')
-      setDeleting(false)
-      return
+      const data = await res.json();
+      toast.error(data.error ?? "Error al eliminar la cuenta.");
+      setDeleting(false);
+      return;
     }
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
   }
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] px-4 py-10">
       <div className="max-w-lg mx-auto space-y-6">
-
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-purple-200 flex items-center gap-2">
             <User className="h-6 w-6 text-purple-400" />
@@ -119,7 +118,9 @@ export default function ProfileClient({ email }: { email: string }) {
                     <span className="animate-spin inline-block h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
                     Guardando...
                   </span>
-                ) : 'Actualizar contraseña'}
+                ) : (
+                  "Actualizar contraseña"
+                )}
               </Button>
             </form>
           </CardContent>
@@ -135,7 +136,11 @@ export default function ProfileClient({ email }: { email: string }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-400">
-              Esta acción es <span className="text-red-400 font-medium">permanente e irreversible</span>. Se eliminarán tu cuenta, campañas y todo el contenido generado.
+              Esta acción es{" "}
+              <span className="text-red-400 font-medium">
+                permanente e irreversible
+              </span>
+              . Se eliminarán tu cuenta, campañas y todo el contenido generado.
             </p>
 
             {!showDeleteForm ? (
@@ -151,7 +156,9 @@ export default function ProfileClient({ email }: { email: string }) {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label className="text-gray-300">
-                    Escribe tu email <span className="text-red-400 font-mono">{email}</span> para confirmar
+                    Escribe tu email{" "}
+                    <span className="text-red-400 font-mono">{email}</span> para
+                    confirmar
                   </Label>
                   <Input
                     type="email"
@@ -164,7 +171,10 @@ export default function ProfileClient({ email }: { email: string }) {
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
-                    onClick={() => { setShowDeleteForm(false); setDeleteConfirm('') }}
+                    onClick={() => {
+                      setShowDeleteForm(false);
+                      setDeleteConfirm("");
+                    }}
                     className="flex-1 text-gray-400 hover:text-white"
                   >
                     Cancelar
@@ -179,7 +189,9 @@ export default function ProfileClient({ email }: { email: string }) {
                         <span className="animate-spin inline-block h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
                         Eliminando...
                       </span>
-                    ) : 'Eliminar cuenta'}
+                    ) : (
+                      "Eliminar cuenta"
+                    )}
                   </Button>
                 </div>
               </div>
@@ -188,5 +200,5 @@ export default function ProfileClient({ email }: { email: string }) {
         </Card>
       </div>
     </div>
-  )
+  );
 }

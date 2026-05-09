@@ -111,6 +111,7 @@ export default function GenerationEditor({ generation, gameSystem }: { generatio
           title,
           content,
           category: generation.category,
+          game_system: gameSystem ?? null,
         }),
       })
       const data = await res.json()

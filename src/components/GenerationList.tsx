@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, BookOpen } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ChevronRight, BookOpen, Search, ChevronLeft } from "lucide-react";
 import type { Category, Generation } from "@/lib/types";
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -44,6 +45,9 @@ export default function GenerationList({
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [filter, setFilter] = useState<Category | "todas">("todas");
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   const fetchGenerations = useCallback(async () => {
     setLoading(true);
@@ -68,10 +72,26 @@ export default function GenerationList({
 
   useEffect(() => {
     fetchGenerations();
+    setCurrentPage(1);
   }, [fetchGenerations, refreshKey]);
 
   return (
     <div className="space-y-4">
+      {/* Búsqueda */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Input
+          type="text"
+          placeholder="Buscar por título..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="pl-10 bg-[#1a1a3a] border-purple-900/50 text-white placeholder:text-gray-600 focus-visible:ring-purple-500"
+        />
+      </div>
+
       {/* Filtros */}
       <div className="flex flex-wrap gap-2">
         {CATEGORIES.map((cat) => (
@@ -99,51 +119,92 @@ export default function GenerationList({
             />
           ))}
         </div>
-      ) : generations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <BookOpen className="h-12 w-12 text-purple-900 mb-3" />
-          <p className="text-gray-500 text-sm">
-            {filter === "todas"
-              ? "Aún no has generado ningún texto. ¡Empieza arriba!"
-              : `No tienes textos de tipo "${CATEGORY_LABELS[filter as Category]}".`}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {generations.map((gen) => (
-            <Link key={gen.id} href={`/generation/${gen.id}`}>
-              <Card className="bg-[#12122a] border-purple-900/30 hover:border-purple-600/50 transition-colors cursor-pointer group">
-                <CardContent className="p-4 flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${CATEGORY_COLORS[gen.category as Category]}`}
-                      >
-                        {CATEGORY_LABELS[gen.category as Category]}
-                      </Badge>
-                      <span className="text-xs text-gray-500">
-                        {new Date(gen.created_at).toLocaleDateString("es-ES", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-gray-200 font-medium truncate">
-                      {gen.title}
-                    </p>
-                    <p className="text-gray-500 text-xs truncate">
-                      {gen.prompt}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-purple-400 transition-colors flex-shrink-0" />
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+      ) : (() => {
+        const filtered = generations.filter((gen) =>
+          gen.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+        const paginatedGenerations = filtered.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+        return filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <BookOpen className="h-12 w-12 text-purple-900 mb-3" />
+            <p className="text-gray-500 text-sm">
+              {filter === "todas" && searchTerm
+                ? `No hay textos que coincidan con "${searchTerm}"`
+                : filter === "todas"
+                  ? "Aún no has generado ningún texto. ¡Empieza arriba!"
+                  : `No tienes textos de tipo "${CATEGORY_LABELS[filter as Category]}".`}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {paginatedGenerations.map((gen) => (
+                <Link key={gen.id} href={`/generation/${gen.id}`}>
+                  <Card className="bg-[#12122a] border-purple-900/30 hover:border-purple-600/50 transition-colors cursor-pointer group">
+                    <CardContent className="p-4 flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${CATEGORY_COLORS[gen.category as Category]}`}
+                          >
+                            {CATEGORY_LABELS[gen.category as Category]}
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {new Date(gen.created_at).toLocaleDateString("es-ES", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-gray-200 font-medium truncate">
+                          {gen.title}
+                        </p>
+                        <p className="text-gray-500 text-xs truncate">
+                          {gen.prompt}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-purple-400 transition-colors flex-shrink-0" />
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between gap-2 mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="border-purple-900/30 hover:border-purple-600 text-gray-400 hover:text-gray-200"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-400">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="border-purple-900/30 hover:border-purple-600 text-gray-400 hover:text-gray-200"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+      })()
     </div>
   );
 }

@@ -124,22 +124,26 @@ export default function GenerationList({
           gen.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
+        if (filtered.length === 0) {
+          return (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <BookOpen className="h-12 w-12 text-purple-900 mb-3" />
+              <p className="text-gray-500 text-sm">
+                {filter === "todas" && searchTerm
+                  ? `No hay textos que coincidan con "${searchTerm}"`
+                  : filter === "todas"
+                    ? "Aún no has generado ningún texto. ¡Empieza arriba!"
+                    : `No tienes textos de tipo "${CATEGORY_LABELS[filter as Category]}".`}
+              </p>
+            </div>
+          );
+        }
+
         const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
         const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
         const paginatedGenerations = filtered.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
-        return filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <BookOpen className="h-12 w-12 text-purple-900 mb-3" />
-            <p className="text-gray-500 text-sm">
-              {filter === "todas" && searchTerm
-                ? `No hay textos que coincidan con "${searchTerm}"`
-                : filter === "todas"
-                  ? "Aún no has generado ningún texto. ¡Empieza arriba!"
-                  : `No tienes textos de tipo "${CATEGORY_LABELS[filter as Category]}".`}
-            </p>
-          </div>
-        ) : (
+        return (
           <div className="space-y-4">
             <div className="space-y-3">
               {paginatedGenerations.map((gen) => (
@@ -176,7 +180,6 @@ export default function GenerationList({
               ))}
             </div>
 
-            {/* Paginación */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between gap-2 mt-4">
                 <Button
@@ -204,7 +207,7 @@ export default function GenerationList({
             )}
           </div>
         );
-      })()
+      })()}
     </div>
   );
 }

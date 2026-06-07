@@ -61,6 +61,7 @@ export default function GenerationEditor({
   );
   const [generatingImage, setGeneratingImage] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
 
   async function clearBadImageUrl() {
     const supabase = createClient();
@@ -114,6 +115,45 @@ export default function GenerationEditor({
       toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setContinuing(false);
+    }
+  }
+
+  async function handleRegenerate() {
+    setRegenerating(true);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: generation.prompt,
+          category: generation.category,
+          returnOnly: true,
+          game_system: gameSystem ?? null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Error al regenerar el contenido");
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("generations")
+        .update({ content: data.content })
+        .eq("id", generation.id);
+
+      if (error) {
+        toast.error("Error al guardar el contenido regenerado.");
+        return;
+      }
+
+      setContent(data.content);
+      toast.success("¡Contenido regenerado!");
+    } catch {
+      toast.error("Error de conexión. Inténtalo de nuevo.");
+    } finally {
+      setRegenerating(false);
     }
   }
 
@@ -316,15 +356,27 @@ export default function GenerationEditor({
                   </Button>
                 </>
               ) : (
-                <Button
-                  onClick={() => setEditing(true)}
-                  variant="outline"
-                  size="sm"
-                  className="border-purple-800 text-purple-300 hover:bg-purple-900/30 hover:text-white"
-                >
-                  <Pencil className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
+                <>
+                  <Button
+                    onClick={() => setEditing(true)}
+                    variant="outline"
+                    size="sm"
+                    className="border-purple-800 text-purple-300 hover:bg-purple-900/30 hover:text-white"
+                  >
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                  <Button
+                    onClick={handleRegenerate}
+                    disabled={regenerating}
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-800 text-blue-300 hover:bg-blue-900/30 hover:text-white"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-1 ${regenerating ? "animate-spin" : ""}`} />
+                    {regenerating ? "Regenerando..." : "Regenerar"}
+                  </Button>
+                </>
               )}
             </div>
 

@@ -49,13 +49,20 @@ export async function POST(request: Request) {
       : `RPG ${category}: ${title}`;
   }
 
-  // Construir URL de Pollinations
+  // Construir URL de Pollinations (nuevo endpoint gen.pollinations.ai)
   const stylePrefix = game_system
     ? `${game_system} RPG art,`
     : "tabletop RPG art,";
   const fullPrompt = `${stylePrefix} ${imagePrompt}, detailed, dramatic lighting, digital painting`;
   const encodedPrompt = encodeURIComponent(fullPrompt);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=512&nologo=true&model=flux`;
+  const pollinationsKey = process.env.POLLINATIONS_API_KEY;
+  if (!pollinationsKey) {
+    return NextResponse.json(
+      { error: "Clave de Pollinations no configurada." },
+      { status: 500 },
+    );
+  }
+  const imageUrl = `https://gen.pollinations.ai/image/${encodedPrompt}?width=768&height=512&nologo=true&model=flux&key=${pollinationsKey}`;
 
   // Guardar en Supabase directamente — Pollinations genera la imagen bajo demanda al cargarla
   const { error } = await supabase

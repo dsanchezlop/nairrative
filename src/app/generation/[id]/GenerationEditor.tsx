@@ -179,7 +179,6 @@ export default function GenerationEditor({
         return;
       }
       setImageUrl(data.imageUrl);
-      toast.success("¡Imagen generada!");
     } catch {
       toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
@@ -476,6 +475,7 @@ export default function GenerationEditor({
                   src={imageUrl}
                   alt={`Ilustración de ${title}`}
                   className="w-full object-cover"
+                  onLoad={() => toast.success("¡Imagen generada!")}
                   onError={() => {
                     setImageLoadError(true);
                     clearBadImageUrl();

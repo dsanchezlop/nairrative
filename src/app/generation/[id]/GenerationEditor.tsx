@@ -476,7 +476,7 @@ export default function GenerationEditor({
                   <div className="flex items-center justify-center h-48 bg-[#0d0d1a]/60">
                     <div className="flex flex-col items-center gap-3">
                       <span className="animate-spin inline-block h-8 w-8 border-2 border-purple-500/30 border-t-purple-400 rounded-full" />
-                      <p className="text-xs text-gray-500">Generando imagen...</p>
+                      <p className="text-xs text-gray-500">Generando imagen... puede tardar hasta 60 segundos</p>
                     </div>
                   </div>
                 )}
@@ -484,7 +484,7 @@ export default function GenerationEditor({
                 <img
                   src={imageUrl}
                   alt={`Ilustración de ${title}`}
-                  className={`w-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0 h-0" : "opacity-100"}`}
+                  className={`w-full object-cover transition-opacity duration-300 ${imageLoading ? "absolute opacity-0 pointer-events-none" : "opacity-100"}`}
                   onLoad={() => {
                     setImageLoading(false);
                     toast.success("¡Imagen generada!");

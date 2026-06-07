@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, BookOpen, Search, ChevronLeft } from "lucide-react";
+import { ChevronRight, BookOpen, Search, ChevronLeft, Heart } from "lucide-react";
 import type { Category, Generation } from "@/lib/types";
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -47,6 +47,7 @@ export default function GenerationList({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const ITEMS_PER_PAGE = 5;
 
   const fetchGenerations = useCallback(async () => {
@@ -69,6 +70,33 @@ export default function GenerationList({
     setGenerations(data ?? []);
     setLoading(false);
   }, [filter, campaignId]);
+
+  async function handleToggleFavorite(
+    e: React.MouseEvent,
+    generationId: string,
+    isFavorite: boolean,
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const res = await fetch("/api/generation/toggle-favorite", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generationId, isFavorite: !isFavorite }),
+      });
+
+      if (res.ok) {
+        setGenerations((prevs) =>
+          prevs.map((g) =>
+            g.id === generationId ? { ...g, is_favorite: !isFavorite } : g,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+    }
+  }
 
   useEffect(() => {
     fetchGenerations();
@@ -107,6 +135,17 @@ export default function GenerationList({
             {cat.label}
           </button>
         ))}
+        <button
+          onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors border flex items-center gap-1 ${
+            showOnlyFavorites
+              ? "bg-red-700/70 text-red-100 border-red-500"
+              : "bg-[#1a1a3a] text-gray-400 border-purple-900/30 hover:border-purple-600 hover:text-gray-200"
+          }`}
+        >
+          <Heart className={`h-3 w-3 ${showOnlyFavorites ? "fill-current" : ""}`} />
+          Favoritos
+        </button>
       </div>
 
       {/* Lista */}
@@ -120,9 +159,13 @@ export default function GenerationList({
           ))}
         </div>
       ) : (() => {
-        const filtered = generations.filter((gen) =>
-          gen.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        const filtered = generations.filter((gen) => {
+          const matchesSearch = gen.title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
+          const matchesFavorite = !showOnlyFavorites || gen.is_favorite;
+          return matchesSearch && matchesFavorite;
+        });
 
         if (filtered.length === 0) {
           return (
@@ -173,7 +216,21 @@ export default function GenerationList({
                           {gen.prompt}
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-purple-400 transition-colors flex-shrink-0" />
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={(e) =>
+                            handleToggleFavorite(e, gen.id, gen.is_favorite ?? false)
+                          }
+                          className="p-1 text-gray-500 hover:text-red-400 transition-colors"
+                        >
+                          <Heart
+                            className={`h-4 w-4 ${
+                              gen.is_favorite ? "fill-red-400 text-red-400" : ""
+                            }`}
+                          />
+                        </button>
+                        <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-purple-400 transition-colors" />
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>

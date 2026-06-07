@@ -38,6 +38,7 @@ export interface Generation {
   category: Category;
   campaign_id: string | null;
   image_url?: string | null;
+  is_favorite?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -162,6 +162,7 @@ export default function GenerationEditor({
 
   async function handleGenerateImage() {
     setGeneratingImage(true);
+    setImageLoadError(false);
     try {
       const res = await fetch("/api/generate-image", {
         method: "POST",
@@ -174,15 +175,35 @@ export default function GenerationEditor({
           game_system: gameSystem ?? null,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Error al generar la imagen");
+
+      let data: { imageUrl?: string; error?: string };
+      try {
+        data = await res.json();
+      } catch {
+        toast.error("Respuesta inesperada del servidor. Inténtalo de nuevo.");
         return;
       }
+
+      if (!res.ok) {
+        if (res.status === 503) {
+          toast.error("El servicio de imágenes no está disponible ahora. Inténtalo en unos minutos.");
+        } else if (res.status === 401) {
+          toast.error("Sesión expirada. Vuelve a iniciar sesión.");
+        } else {
+          toast.error(data.error ?? "Error al generar la imagen");
+        }
+        return;
+      }
+
+      if (!data.imageUrl) {
+        toast.error("No se recibió la URL de la imagen.");
+        return;
+      }
+
       setImageUrl(data.imageUrl);
       setImageLoading(true);
     } catch {
-      toast.error("Error de conexión. Inténtalo de nuevo.");
+      toast.error("Error de conexión. Comprueba tu conexión a internet e inténtalo de nuevo.");
     } finally {
       setGeneratingImage(false);
     }
@@ -469,6 +490,12 @@ export default function GenerationEditor({
             Ilustración
           </p>
 
+          {imageLoadError && (
+            <div className="bg-red-900/20 border border-red-700/40 rounded-md px-3 py-2 text-xs text-red-300">
+              La imagen no pudo cargarse. Pulsa &quot;Regenerar imagen&quot; para intentarlo de nuevo.
+            </div>
+          )}
+
           {imageUrl && !imageLoadError ? (
             <div className="space-y-3">
               <div className="relative rounded-lg overflow-hidden border border-purple-900/30">
@@ -493,9 +520,7 @@ export default function GenerationEditor({
                     setImageLoading(false);
                     setImageLoadError(true);
                     clearBadImageUrl();
-                    toast.error(
-                      "La imagen no pudo cargarse. Puedes intentar generarla de nuevo.",
-                    );
+                    toast.error("La imagen no pudo cargarse. Puede que el servicio esté ocupado — inténtalo de nuevo.");
                   }}
                 />
               </div>

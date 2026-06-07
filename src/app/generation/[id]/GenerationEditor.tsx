@@ -63,6 +63,7 @@ export default function GenerationEditor({
   );
   const [generatingImage, setGeneratingImage] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
   async function clearBadImageUrl() {
@@ -179,6 +180,7 @@ export default function GenerationEditor({
         return;
       }
       setImageUrl(data.imageUrl);
+      setImageLoading(true);
     } catch {
       toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
@@ -470,13 +472,25 @@ export default function GenerationEditor({
           {imageUrl && !imageLoadError ? (
             <div className="space-y-3">
               <div className="relative rounded-lg overflow-hidden border border-purple-900/30">
+                {imageLoading && (
+                  <div className="flex items-center justify-center h-48 bg-[#0d0d1a]/60">
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="animate-spin inline-block h-8 w-8 border-2 border-purple-500/30 border-t-purple-400 rounded-full" />
+                      <p className="text-xs text-gray-500">Generando imagen...</p>
+                    </div>
+                  </div>
+                )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imageUrl}
                   alt={`Ilustración de ${title}`}
-                  className="w-full object-cover"
-                  onLoad={() => toast.success("¡Imagen generada!")}
+                  className={`w-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0 h-0" : "opacity-100"}`}
+                  onLoad={() => {
+                    setImageLoading(false);
+                    toast.success("¡Imagen generada!");
+                  }}
                   onError={() => {
+                    setImageLoading(false);
                     setImageLoadError(true);
                     clearBadImageUrl();
                     toast.error(

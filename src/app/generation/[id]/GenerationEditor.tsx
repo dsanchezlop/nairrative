@@ -19,6 +19,8 @@ import {
   Wand2,
   ImageIcon,
   RefreshCw,
+  Download,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Category, Generation } from "@/lib/types";
@@ -182,6 +184,29 @@ export default function GenerationEditor({
       toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setGeneratingImage(false);
+    }
+  }
+
+  function handleExportTxt() {
+    const content_to_export = `${title}\n\n${content}`;
+    const blob = new Blob([content_to_export], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("¡Texto exportado!");
+  }
+
+  async function handleCopyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success("¡Contenido copiado al portapapeles!");
+    } catch {
+      toast.error("Error al copiar al portapapeles.");
     }
   }
 
@@ -375,6 +400,24 @@ export default function GenerationEditor({
                   >
                     <RefreshCw className={`h-4 w-4 mr-1 ${regenerating ? "animate-spin" : ""}`} />
                     {regenerating ? "Regenerando..." : "Regenerar"}
+                  </Button>
+                  <Button
+                    onClick={handleCopyToClipboard}
+                    variant="outline"
+                    size="sm"
+                    className="border-green-800 text-green-300 hover:bg-green-900/30 hover:text-white"
+                  >
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copiar
+                  </Button>
+                  <Button
+                    onClick={handleExportTxt}
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-800 text-amber-300 hover:bg-amber-900/30 hover:text-white"
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Exportar
                   </Button>
                 </>
               )}
